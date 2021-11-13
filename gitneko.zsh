@@ -4,7 +4,7 @@
 # save old prompt
 NEKOPPT_SAV=$PROMPT
 # toggle
-NEKOPPT_T='true'
+NEKOPPT_T=true
 # gitneko prompt
 NEKOPPT_HEAD=''
 NEKOPPT_PATH=''
@@ -25,7 +25,7 @@ gitneko-get() {
   NEKOPPT_BRCH=${refname#ref: refs/heads/}
   NEKOPPT_BRCH="%B%F{green}"$(basename $NEKOPPT_HEAD)"%B%F{white}""ᛘ""%B%F{magenta}"$NEKOPPT_BRCH
   NEKOPPT=$NEKOPPT_UK
-  if [[ $NEKOPPT_T ]]; then
+  if $NEKOPPT_T; then
     local git_status=$(git status --porcelain=v1 -z .)
     if [[ $git_status =~ \ \?\?\  ]]; then; NEKOPPT=$NEKOPPT_U;
     elif [[ $git_status =~ \ [ACDMRTU]+\  ]];    then; NEKOPPT=$NEKOPPT_S;
@@ -37,9 +37,12 @@ gitneko-get() {
 }
 
 gitneko-check() {
+  if ! $NEKOPPT_T; then
+    return
+  fi
   local basedir=$(pwd)
   local curdir=$basedir
-  if [ -n $NEKOPPT_HEAD ]; then
+  if [ -z $NEKOPPT_HEAD ]; then
     NEKOPPT_SAV=$PROMPT
   fi
   until [ ${curdir} -ef / ]; do
@@ -62,16 +65,17 @@ gitneko-check() {
 }
 
 gitneko-fresh(){
-  if [[ $NEKOPPT_T ]] && [[ $NEKOPPT_HEAD ]]; then
+  if $NEKOPPT_T && [[ $NEKOPPT_HEAD ]] ; then
     gitneko-get
   fi
 }
 
 gitneko-toggle(){
-    if [[ $NEKOPPT_T ]]; then;
-      NEKOPPT_T=''                       
+    if $NEKOPPT_T ; then;
+      NEKOPPT_T=false
+      gitneko-get
     else
-      NEKOPPT_T='true'
+      NEKOPPT_T=true
     fi
 }
 
