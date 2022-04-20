@@ -2,112 +2,138 @@
 # 'git status' may be slow on large projects, you can toggle it off.
 
 # save old prompt
-NEKOPPT_SAV=$PROMPT
+NEKOPS_SAV=$PROMPT
 # toggle
-NEKOPPT_T=true
+NEKOPS_T=true
 # gitneko prompt
-NEKOPPT_HEAD=''
-NEKOPPT_PATH=''
-NEKOPPT_BRCH=''
+NEKOPS_HEAD=''
+NEKOPS_PATH=''
+NEKOPS_BRCH=''
 # Unknown
-NEKOPPT_UK='%B%F{white}(^?ω?^)-'
+NEKOPS_UK='%B%F{white}(^?ω?^)-'
 # Committed
-NEKOPPT_C='%B%F{white}(^>ω<^)-'
+NEKOPS_C='%B%F{white}(^>ω<^)-'
 # Untracked
-NEKOPPT_U='%B%F{white}(^%B%F{cyan}·%B%F{white}ω%B%F{cyan}·%B%F{white}^)-'
+NEKOPS_U='%B%F{white}(^%B%F{cyan}·%B%F{white}ω%B%F{cyan}·%B%F{white}^)-'
 # Staged(staged, modified & unmodified)
-NEKOPPT_S='%B%F{white}(^%B%F{yellow}6%B%F{white}ω%B%F{yellow}6%B%F{white}^)-'
+NEKOPS_S='%B%F{white}(^%B%F{yellow}6%B%F{white}ω%B%F{yellow}6%B%F{white}^)-'
 # Error
-NEKOPPT_X='%B%F{white}(^%B%F{red}✦%B%F{white}ω%B%F{red}✦%B%F{white}^)-'
+NEKOPS_X='%B%F{white}(^%B%F{red}✦%B%F{white}ω%B%F{red}✦%B%F{white}^)-'
 
+# get git status and save it to NEKOPS
 gitneko-get() {
-  local refname=$(< ${NEKOPPT_HEAD}/.git/HEAD)
-  NEKOPPT_BRCH=${refname#ref: refs/heads/}
-  NEKOPPT_BRCH="%B%F{green}"$(basename $NEKOPPT_HEAD)"%B%F{white}""ᛘ""%B%F{magenta}"$NEKOPPT_BRCH
-  NEKOPPT=$NEKOPPT_UK
-  if $NEKOPPT_T; then
+  local refname=$(< ${NEKOPS_HEAD}/.git/HEAD)
+  NEKOPS_BRCH=${refname#ref: refs/heads/}
+  NEKOPS_BRCH="%B%F{green}$(basename $NEKOPS_HEAD)%B%F{white}ᛘ%B%F{magenta}${NEKOPS_BRCH}"
+  NEKOPS=$NEKOPS_UK
+  if $NEKOPS_T; then
     local git_status=$(git status --porcelain=v1 -z .)
-    if [[ $git_status =~ \ \?\?\  ]]; then; NEKOPPT=$NEKOPPT_U;
-    elif [[ $git_status =~ \ [ACDMRTU]+\  ]];    then; NEKOPPT=$NEKOPPT_S;
-    elif [[ $git_status =~ \ X\  ]];    then; NEKOPPT=$NEKOPPT_X;
-    else; NEKOPPT=$NEKOPPT_C;fi
-    PROMPT="%B%F{white}"${NEKOPPT_BRCH}${NEKOPPT}"%B%F{cyan}."${NEKOPPT_PATH}"%B%F{white})%B%F{blue}>%b%f%k "
-  else; PROMPT=$NEKOPPT_SAV
+    case $git_status in
+      \ \?\?\ )
+        NEKOPS=$NEKOPS_U
+        ;;
+      \ [ACDMRTU]+\ )
+        NEKOPS=$NEKOPS_S
+        ;;
+      \ X\ )
+        NEKOPS=$NEKOPS_X
+        ;;
+      *)
+        NEKOPS=$NEKOPS_C
+        ;;
+    esac
+  fi
+}
+
+gitneko-fresh(){
+  # fresh status
+  if $NEKOPS_T && [[ $NEKOPS_HEAD ]] ; then
+    PROMPT="%B%F{white}${NEKOPS_BRCH}${NEKOPS}%B%F{cyan}.${NEKOPS_PATH}%B%F{white})%B%F{blue}>%b%f%k "
+    gitneko-get
+  else
+    PROMPT=$NEKOPS_SAV
+  fi
+  # show python venv prompt
+  if [[ $VIRTUAL_ENV_PROMPT ]] ; then
+    PROMPT=$VIRTUAL_ENV_PROMPT$PROMPT
+  fi
+  # fresh venv save
+  if [[ $VIRTUAL_ENV_PROMPT ]] ; then
+    _OLD_VISUAL_PS1=$NEKOPS_SAV
   fi
 }
 
 gitneko-check() {
-  if ! $NEKOPPT_T; then
-    return
-  fi
   local basedir=$(pwd)
   local curdir=$basedir
-  if [ -z $NEKOPPT_HEAD ]; then
-    NEKOPPT_SAV=$PROMPT
+  # if HEAD is empty, save current prompt and start searching
+  if [ -z $NEKOPS_HEAD ] ; then
+    if [[ $VIRTUAL_ENV_PROMPT ]] ; then
+      NEKOPS_SAV=$_OLD_VISUAL_PS1
+    else
+      NEKOPS_SAV=$PROMPT
+    fi
   fi
-  until [ ${curdir} -ef / ]; do
-    if [ -f ${curdir}/.git/HEAD ]; then
-      NEKOPPT_PATH=${basedir#$curdir}
-      if [[ ${curdir} == ${NEKOPPT_HEAD} ]]; then
-        PROMPT="%B%F{white}"${NEKOPPT_BRCH}${NEKOPPT}"%B%F{cyan}."${NEKOPPT_PATH}"%B%F{white})%B%F{blue}>%b%f%k "
-        return
-      fi
-      NEKOPPT_HEAD=${curdir}
+  # searching up for .git/HEAD, get relative path to project rootdir
+  until [ ${curdir} -ef / ] ; do
+    if [ -f ${curdir}/.git/HEAD ] ; then
+      # found, set it, fresh PROMPT and return here
+      NEKOPS_PATH=${basedir#$curdir}
+      NEKOPS_HEAD=${curdir}
       gitneko-fresh
       return
     fi
     curdir=$(dirname ${curdir})
   done
-  NEKOPPT_HEAD=''
-  NEKOPPT_PATH=''
-  NEKOPPT_BRCH=''
-  PROMPT=$NEKOPPT_SAV
-}
-
-gitneko-fresh(){
-  if $NEKOPPT_T && [[ $NEKOPPT_HEAD ]] ; then
-    gitneko-get
+  # not found, clear all and recover
+  NEKOPS_HEAD=''
+  NEKOPS_PATH=''
+  NEKOPS_BRCH=''
+  if [[ $VIRTUAL_ENV_PROMPT ]] ; then
+    PROMPT=$VIRTUAL_ENV_PROMPT$NEKOPS_SAV
+  else
+    PROMPT=$NEKOPS_SAV
   fi
 }
 
 gitneko-toggle(){
-    if $NEKOPPT_T ; then;
-      NEKOPPT_T=false
-      gitneko-get
-    else
-      NEKOPPT_T=true
-    fi
+  if $NEKOPS_T ; then
+    NEKOPS_T=false
+    gitneko-get
+  else
+    NEKOPS_T=true
+  fi
 }
 
 function gitneko(){
-    case $1 in
+  case $1 in
     "-c")
-        gitneko-check
-    ;;
+      gitneko-check
+      ;;
     "-f")
-        gitneko-fresh
-    ;;
+      gitneko-fresh
+      ;;
     "-g")
-        gitneko-get
-    ;;
+      gitneko-get
+      ;;
     "-h")
-    echo "gitneko parameters:"
-    echo "\t -c check prompt"
-    echo "\t -f fresh prompt"
-    echo "\t -g get git status"
-    echo "\t -h show this help"
-    echo "\t -t toggle prompt"
-    ;;
+      echo "gitneko parameters:"
+      echo "\t -c check prompt"
+      echo "\t -f fresh prompt"
+      echo "\t -g get git status"
+      echo "\t -h show this help"
+      echo "\t -t toggle prompt"
+      ;;
     "-t")
-        gitneko-toggle
-    ;;
+      gitneko-toggle
+      ;;
     *)
-    echo "unknown parameter, -h for help"  
-    ;;
-    esac
+      echo "unknown parameter, -h for help"  
+      ;;
+  esac
 }
 
 autoload -Uz add-zsh-hook
-add-zsh-hook chpwd gitneko-check 
+add-zsh-hook chpwd  gitneko-check 
 add-zsh-hook precmd gitneko-fresh
 gitneko-check
