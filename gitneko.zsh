@@ -28,20 +28,18 @@ gitneko-get() {
   NEKOPS=$NEKOPS_UK
   if $NEKOPS_T; then
     local git_status=$(git status --porcelain=v1 -z .)
-    case $git_status in
-      \ \?\?\ )
+    if [[ $NEKOPS_T ]]; then
+      local git_status=$(git status --porcelain=v1 -z .)
+      if [[ $git_status =~ \ \?\?\ .* ]]; then
         NEKOPS=$NEKOPS_U
-        ;;
-      \ [ACDMRTU]+\ )
+      elif [[ $git_status =~ [\ ]*[ACDMRTU]+[\ ]*\ .* ]]; then
         NEKOPS=$NEKOPS_S
-        ;;
-      \ X\ )
+      elif [[ $git_status =~ [\ ]*[X][\ ]*\ .* ]]; then
         NEKOPS=$NEKOPS_X
-        ;;
-      *)
+      else
         NEKOPS=$NEKOPS_C
-        ;;
-    esac
+      fi
+    fi
   fi
 }
 
