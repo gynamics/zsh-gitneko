@@ -10,44 +10,53 @@ NEKOPS_HEAD=''
 NEKOPS_PATH=''
 NEKOPS_BRCH=''
 # Unknown
-NEKOPS_UK='%B%F{white}(^?ω?^)-'
-# Committed
-NEKOPS_C='%B%F{white}(^>ω<^)-'
+NEKOPS_K='%B%F{white}(^%B%F{magenta}?%B%F{white}ω%B%F{magenta}?%B%F{white}^)-'
 # Untracked
-NEKOPS_U='%B%F{white}(^%B%F{cyan}·%B%F{white}ω%B%F{cyan}·%B%F{white}^)-'
+NEKOPS_U='%B%F{white}(^%B%F{magenta}*%B%F{white}ω%B%F{magenta}*%B%F{white}^)-'
+# Ignored
+NEKOPS_I='%B%F{white}(^%B%F{blue}-%B%F{white}ω%B%F{blue}-%B%F{white}^)-'
+# Committed
+NEKOPS_C='%B%F{white}(^%B%F{white}>%B%F{white}ω%B%F{white}<%B%F{white}^)-'
+# Updated
+NEKOPS_M1='%B%F{white}(^%B%F{cyan}·%B%F{white}ω%B%F{cyan}·%B%F{white}^)-'
+# Unmerged
+NEKOPS_M2='%B%F{white}(^%B%F{cyan}0%B%F{white}ω%B%F{cyan}0%B%F{white}^)-'
 # Staged(staged, modified & unmodified)
-NEKOPS_S='%B%F{white}(^%B%F{yellow}6%B%F{white}ω%B%F{yellow}6%B%F{white}^)-'
+NEKOPS_S='%B%F{white}(^%B%F{green}6%B%F{white}ω%B%F{green}6%B%F{white}^)-'
 # Error
-NEKOPS_X='%B%F{white}(^%B%F{red}✦%B%F{white}ω%B%F{red}✦%B%F{white}^)-'
+NEKOPS_E='%B%F{white}(^%B%F{red}e%B%F{white}ω%B%F{red}e%B%F{white}^)-'
 
 # get git status and save it to NEKOPS
 gitneko-get() {
   local refname=$(< ${NEKOPS_HEAD}/.git/HEAD)
   NEKOPS_BRCH=${refname#ref: refs/heads/}
   NEKOPS_BRCH="%B%F{green}$(basename $NEKOPS_HEAD)%B%F{white}ᛘ%B%F{magenta}${NEKOPS_BRCH}"
-  NEKOPS=$NEKOPS_UK
-  if $NEKOPS_T; then
-    local git_status=$(git status --porcelain=v1 -z .)
-    if [[ $NEKOPS_T ]]; then
-      local git_status=$(git status --porcelain=v1 -z .)
-      if [[ $git_status =~ \ \?\?\ .* ]]; then
-        NEKOPS=$NEKOPS_U
-      elif [[ $git_status =~ [\ ]*[ACDMRTU]+[\ ]*\ .* ]]; then
-        NEKOPS=$NEKOPS_S
-      elif [[ $git_status =~ [\ ]*[X][\ ]*\ .* ]]; then
-        NEKOPS=$NEKOPS_X
-      else
-        NEKOPS=$NEKOPS_C
-      fi
+  NEKOPS=$NEKOPS_K
+  if [[ $NEKOPS_T ]]; then
+    local git_status=$(git status --porcelain=v1 .)
+    if   [[ $git_status =~ [\?][\?][\ ] ]]; then
+      NEKOPS=$NEKOPS_U
+    elif [[ $git_status =~ [ADU][ADU][\ ] ]]; then
+      NEKOPS=$NEKOPS_M1
+    elif [[ $git_status =~ [DMTARC][\ ][\ ] ]]; then
+      NEKOPS=$NEKOPS_S 
+    elif [[ $git_status =~ [\ MTARC][\ AMTD][\ ] ]]; then
+      NEKOPS=$NEKOPS_M2
+    elif [[ $git_status =~ [!][!][\ ] ]]; then
+      NEKOPS=$NEKOPS_I
+    elif [[ $git_status =~ [X][\ ][\ ] ]]; then
+      NEKOPS=$NEKOPS_E
+    else
+      NEKOPS=$NEKOPS_C
     fi
   fi
 }
 
 gitneko-fresh(){
   # fresh status
-  if $NEKOPS_T && [[ $NEKOPS_HEAD ]] ; then
-    PROMPT="%B%F{white}${NEKOPS_BRCH}${NEKOPS}%B%F{cyan}.${NEKOPS_PATH}%B%F{white})%B%F{blue}>%b%f%k "
+  if [[ $NEKOPS_T ]] && [[ $NEKOPS_HEAD ]]; then
     gitneko-get
+    PROMPT="%B%F{white}${NEKOPS_BRCH}${NEKOPS}%B%F{cyan}.${NEKOPS_PATH}%B%F{white})%B%F{blue}>%b%f%k "
   else
     PROMPT=$NEKOPS_SAV
   fi
