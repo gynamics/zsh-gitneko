@@ -35,7 +35,7 @@ gitneko-get() {
   if [[ $(pwd) =~ "\.git" ]]; then
     return # do not run git status in .git directory
   fi
-  local git_status=$(git status --porcelain=v1 .)
+  local git_status=$(git --no-optional-locks status --porcelain=v1 .)
   if   [[ $git_status =~ [\?][\?][\ ] ]]; then
     NEKOPS=$NEKOPS_U
   elif [[ $git_status =~ [ADU][ADU][\ ] ]]; then
