@@ -12,6 +12,7 @@ NEKOPS_PATH=''
 NEKOPS_BRCH=''
 NEKOPS_ARG1=""
 NEKOPS_ARG2=""
+NEKOPS_ARG3=""
 NEKOLOR_R='%B%F{red}'
 NEKOLOR_G='%B%F{green}'
 NEKOLOR_B='%B%F{blue}'
@@ -28,9 +29,14 @@ gitneko-get() {
   else
     refname=${refname:0:6}
   fi
-  NEKOPS_BRCH="%B%F{magenta}${refname}%B%F{white}ᛘ"
+  if [[ -n $(git remote) ]]; then
+    NEKOPS_BRCH="${NEKOLOR_B}${refname} ${NEKOLOR_C}ᛘ"
+  else
+    NEKOPS_BRCH="${NEKOLOR_Y}${refname} ${NEKOLOR_W}ᛘ"
+  fi
   NEKOPS_ARG1="${NEKOLOR_M}?"
   NEKOPS_ARG2=""
+  NEKOPS_ARG3=""
   if [[ $(pwd) =~ "\.git" ]]; then
     return # do not run git status in .git directory
   fi
@@ -53,15 +59,22 @@ gitneko-get() {
   else
     # Committed
     NEKOPS_ARG1="${NEKOLOR_W}>"
+    NEKOPS_ARG2="${NEKOLOR_W}<"
   fi
-  local stashcnt=$(git stash list|wc -l)
-  if [ $stashcnt -gt 0 ]; then
-    NEKOPS_ARG2="${NEKOLOR_Y}+"
-  elif [[ $git_status =~ [\?][\?][\ ] ]]; then
+  
+  if [[ $git_status =~ [\?][\?][\ ] ]]; then
     # Untracked
     NEKOPS_ARG2="${NEKOLOR_M}*"
-  else
-    NEKOPS_ARG2="${NEKOLOR_W}<"
+  fi
+  
+  local stashcnt=$(git stash list|wc -l)
+  if [ $stashcnt -gt 0 ]; then
+    # Stashed
+    NEKOPS_ARG3="${NEKOPS_ARG3} ${NEKOLOR_Y}≅"
+  fi
+  if [ -d ${NEKOPS_HEAD}/.git/rebase-apply ]; then
+    # In Rebase-Apply State
+    NEKOPS_ARG3="${NEKOPS_ARG3} ${NEKOLOR_R}a"
   fi
 }
 
@@ -69,13 +82,13 @@ gitneko-fresh(){
   # fresh status
   if [[ $NEKOPS_T = true ]] && [[ $NEKOPS_HEAD ]]; then
     gitneko-get
-    PROMPT="%B%F{white}(%B%F{green}$(basename $NEKOPS_HEAD)${NEKOPS_PATH} %B%F{magenta}%#%b%f%k "
+    PROMPT="${NEKOLOR_W}(${NEKOLOR_G}$(basename $NEKOPS_HEAD)${NEKOLOR_C}${NEKOPS_PATH} ${NEKOLOR_M}%#%b%f%k "
     if [ -n "${NEKOPS_ARG2}" ]; then
-      NEKOPS="%B%F{white}(^${NEKOPS_ARG1}%B%F{white}ω${NEKOPS_ARG2}%B%F{white}^)~"
+      NEKOPS="${NEKOLOR_W}(^${NEKOPS_ARG1}${NEKOLOR_W}ω${NEKOPS_ARG2}${NEKOLOR_W}^)~${NEKOPS_ARG3}"
     else
-      NEKOPS="%B%F{white}(^${NEKOPS_ARG1}%B%F{white}ω${NEKOPS_ARG1}%B%F{white}^)~"
+      NEKOPS="${NEKOLOR_W}(^${NEKOPS_ARG1}${NEKOLOR_W}ω${NEKOPS_ARG1}${NEKOLOR_W}^)~${NEKOPS_ARG3}"
     fi
-    RPROMPT="%(?.%F{white} .%F{magenta}%?) ${NEKOPS_BRCH}${NEKOPS} %B%F{green}<%B%F{white}%)"
+    RPROMPT="%(?. .${NEKOLOR_R}%?) ${NEKOPS_BRCH}${NEKOPS} ${NEKOLOR_G}<${NEKOLOR_W}%)"
   else
     PROMPT=$NEKOPS_SAVL
     RPROMPT=$NEKOPS_SAVR
