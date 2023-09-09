@@ -33,34 +33,54 @@ NEKOPS_ARG2=""
 NEKOPS_ARG3=""
 # get status and set nekops args
 local git_status=$(git --no-optional-locks status --porcelain=v1 .)
-if [[ $git_status =~ [ADU][ADU][\ ] ]]; then
-  # Updated
-  NEKOPS_ARG1="${NEKOLOR_Y}*"
-elif [[ $git_status =~ [DMTARC][\ ][\ ] ]]; then
-  # Staged
-  NEKOPS_ARG1="${NEKOLOR_G}6"
-elif [[ $git_status =~ [\ MTARC][\ AMTD][\ ] ]]; then
+# set the first argument
+if [[ $git_status =~ [MTADRC][\ ][\ ] ]]; then
+  # X (index) Modified
+  NEKOPS_ARG1="${NEKOLOR_B}*"
+elif [[ $git_status =~ [MTARC][MTD][\ ] ]]; then
+  # Both XY Modified
+  NEKOPS_ARG1="${NEKOLOR_G}0"
+elif [[ $git_status =~ [AUD][AUD][\ ] ]]; then
   # Unmerged
-  NEKOPS_ARG1="${NEKOLOR_C}0"
-elif [[ $git_status =~ [!][!][\ ] ]]; then
-  # Ignored
-  NEKOPS_ARG1="${NEKOLOR_M}-"
+  NEKOPS_ARG1="${NEKOLOR_C}6"
 elif [[ $git_status =~ [X][\ ][\ ] ]]; then
   # Error
   NEKOPS_ARG1="${NEKOLOR_R}e"
 else
   # Committed
   NEKOPS_ARG1="${NEKOLOR_W}>"
-  NEKOPS_ARG2="${NEKOLOR_W}<"
 fi
-if [[ $git_status =~ [\?][\?][\ ] ]]; then
-  # Untracked
-  NEKOPS_ARG2="${NEKOLOR_B}·"
+# set the second argument
+if [[ $git_status =~ [\ ][MTDRC][\ ] ]]; then
+  # Y (work tree) Modified
+  NEKOPS_ARG2="${NEKOLOR_Y}*"
+  # if index clean, then display it to 1
+  if [[ $NEKOPS_ARG1 = "${NEKOLOR_W}>" ]]; then
+    NEKOPS_ARG1=$NEKOPS_ARG2
+    NEKOPS_ARG2=""
+  fi
 fi
+# these states are not that important
+if [ -z $NEKOPS_ARG2 ]; then
+  if [[ $git_status =~ [\?][\?][\ ] ]]; then
+    # Untracked
+    NEKOPS_ARG2="${NEKOLOR_B}·"
+  elif [[ $git_status =~ [!][!][\ ] ]]; then
+    # Ignored
+    NEKOPS_ARG2="${NEKOLOR_M}-"
+  elif [[ $NEKOPS_ARG1 = "${NEKOLOR_W}>" ]]; then
+    # Clean
+    NEKOPS_ARG2="${NEKOLOR_W}<"
+  else
+    NEKOPS_ARG2=$NEKOPS_ARG1
+  fi
+fi 
+# apply status
 if [ -d ${NEKOPS_HEAD}/.git/rebase-apply ]; then
   # In Rebase-Apply State
   NEKOPS_ARG3="${NEKOPS_ARG3} ${NEKOLOR_R}Ra"
 fi
+# stash status
 local stashcnt=$(git stash list|wc -l)
 if [ $stashcnt -gt 0 ]; then
   # Stashed
@@ -85,11 +105,7 @@ fi
 }
 
 gitneko-set-rprompt() {
-if [ -n "${NEKOPS_ARG2}" ]; then
-  NEKOPS="${NEKOLOR_W}(^${NEKOPS_ARG1}${NEKOLOR_W}ω${NEKOPS_ARG2}${NEKOLOR_W}^)~${NEKOPS_ARG3}"
-else
-  NEKOPS="${NEKOLOR_W}(^${NEKOPS_ARG1}${NEKOLOR_W}ω${NEKOPS_ARG1}${NEKOLOR_W}^)~${NEKOPS_ARG3}"
-fi
+NEKOPS="${NEKOLOR_W}(^${NEKOPS_ARG1}${NEKOLOR_W}ω${NEKOPS_ARG2}${NEKOLOR_W}^)~${NEKOPS_ARG3}"
 RPROMPT="%(?. .${NEKOLOR_R}%?) ${NEKOPS_BRCH}${NEKOPS} ${NEKOLOR_G}<${NEKOLOR_W}%)"
 }
 
@@ -165,15 +181,16 @@ function gitneko(){
     "-h")
       print "Hello, I am your git neko! (^@ω@^)"
       print ""
-      print -P "  eye | git status | X        | Y       "
-      print -P "  ----+------------+----------+---------"
-      print -P "  (^${NEKOLOR_Y}*%b%f%kω| Updated    | [ADU]    | [ADU]   "
-      print -P "  (^${NEKOLOR_G}6%b%f%kω| Staged     | [DMTARC] | [ ]     "
-      print -P "  (^${NEKOLOR_C}0%b%f%kω| Unmerged   | [ MTARC] | [ AMTD] "
-      print -P "  (^${NEKOLOR_M}-%b%f%kω| Ignored    | [!]      | [!]     "
-      print -P "  (^${NEKOLOR_R}e%b%f%kω| Error      | [X]      | [ ]     "
-      print -P "  (^${NEKOLOR_B}·%b%f%kω| Untracked  | [?]      | [?]     "
-      print -P "  (^${NEKOLOR_W}>%b%f%kω| Commited   | fallback | fallback"
+      print -P "  eye | git status  | X (index) | Y (worktree) "
+      print -P "  ----+-------------+-----------+--------------"
+      print -P "  (^${NEKOLOR_C}6%b%f%kω| Unmerged    | [ADU]     | [ADU]   "
+      print -P "  (^${NEKOLOR_B}*%b%f%kω| X Modified  | [MTADRC]  | [ ]     "
+      print -P "  (^${NEKOLOR_G}0%b%f%kω| XY Modified | [MTARC]   | [MTD]   "
+      print -P "  (^${NEKOLOR_M}-%b%f%kω| Ignored     | [!]       | [!]     "
+      print -P "  (^${NEKOLOR_R}e%b%f%kω| Error       | [X]       | [ ]     "
+      print -P "  (^${NEKOLOR_Y}*%b%f%kω| Y Modified  | [ ]       | [MTDRC] "
+      print -P "  (^${NEKOLOR_B}·%b%f%kω| Untracked   | [?]       | [?]     "
+      print -P "  (^${NEKOLOR_W}>%b%f%kω| Commited    | fallback  | fallback"
       print ""
       print -P "  toy | explanation            "
       print -P "  ----+------------------------"
