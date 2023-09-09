@@ -173,7 +173,7 @@ function gitneko(){
       print -P "  (^${NEKOLOR_M}-%b%f%kω| Ignored    | [!]      | [!]     "
       print -P "  (^${NEKOLOR_R}e%b%f%kω| Error      | [X]      | [ ]     "
       print -P "  (^${NEKOLOR_B}·%b%f%kω| Untracked  | [?]      | [?]     "
-      print -P "  (^%b%f%k>%b%f%kω| Commited   | fallback | fallback"
+      print -P "  (^${NEKOLOR_W}>%b%f%kω| Commited   | fallback | fallback"
       print ""
       print -P "  toy | explanation            "
       print -P "  ----+------------------------"
