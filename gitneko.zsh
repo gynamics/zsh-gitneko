@@ -5,13 +5,16 @@ if ! [[ -x /usr/bin/git ]]; then
   echo "\e[31mgit not detected, gitneko will be disabled!\e[0m" >&2
 fi
 
+# toggle
+NEKOPS_T=true
+# two line mode toggle
+NEKOPS_2L=false
+# cascade mode toggle
+NEKOPS_2C=false
+
 # save old prompts
 NEKOPS_SAVL=''
 NEKOPS_SAVR=''
-# toggle
-NEKOPS_T=true
-NEKOPS_2L=false
-NEKOPS_2C=false
 # gitneko prompt
 NEKOPS_HEAD=''
 NEKOPS_PATH=''
@@ -19,6 +22,7 @@ NEKOPS_BRCH=''
 NEKOPS_ARG1=''
 NEKOPS_ARG2=''
 NEKOPS_ARG3=''
+# zsh prompt colors
 NEKOLOR_R='%B%F{red}'
 NEKOLOR_G='%B%F{green}'
 NEKOLOR_B='%B%F{blue}'
@@ -132,7 +136,7 @@ fi
 # set prompt
 if [[ -e $NEKOPS_PATH ]]; then
   local left_bottom="${NEKOLOR_M}%#%b%f%k "
-  local right_bottom="%(?. .${NEKOLOR_R}%?) ${NEKOPS_ARG3} "\
+  local right_bottom="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} "\
 "${NEKOLOR_W}~(^${NEKOPS_ARG2}"\
 "${NEKOLOR_W}ω${NEKOPS_ARG1}"\
 "${NEKOLOR_W}^)"
