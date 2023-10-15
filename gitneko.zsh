@@ -141,8 +141,8 @@ if [[ -e $NEKOPS_PATH ]]; then
 "${NEKOLOR_W}ω${NEKOPS_ARG1}"\
 "${NEKOLOR_W}^)"
   # set left prompt
-  local left_top="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD} "\
-"${NEKOLOR_C}${PWD#$NEKOPS_PATH}"
+  local left_top="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"\
+"${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
   # set right prompt
   local right_top="${NEKOLOR_C}ᛘ ${NEKOPS_BRCH} "\
 "${NEKOLOR_G}<${NEKOLOR_W}%)"
