@@ -146,19 +146,18 @@ if [[ -e $NEKOPS_PATH ]]; then
   # set right prompt
   local right_top="${NEKOLOR_C}ᛘ ${NEKOPS_BRCH} "\
 "${NEKOLOR_G}<${NEKOLOR_W}%)"
-
-  if $NEKOPS_2L ; then
-    PROMPT="$(fill-line ${left_top} ${right_top})"$'\n'
-    RPROMPT="${right_bottom}"
-  else
-    PROMPT="${left_top}"
-    RPROMPT="${right_bottom}${right_top}"
-  fi   
   # python venv prompt support
   if [ -v VIRTUAL_ENV ]; then
-    left_bottom=$VIRTUAL_ENV_PROMPT$left_bottom
+    left_top=$VIRTUAL_ENV_PROMPT$left_top
   fi
-  PROMPT+="${left_bottom}"
+  # 2 line mode
+  if $NEKOPS_2L ; then
+    PROMPT="$(fill-line ${left_top} ${right_top})"$'\n'"${left_bottom}"
+    RPROMPT="${right_bottom}"
+  else
+    PROMPT="${left_top}${left_bottom}"
+    RPROMPT="${right_bottom}${right_top}"
+  fi   
 else # reset
   PROMPT=$NEKOPS_SAVL
   # python venv prompt support
@@ -272,13 +271,14 @@ function gitneko() {
       print "  -t toggle prompt"
       print "  -2 toggle 2 line mode"
       print "  -c toggle cascade mode"
+      print ""
       ;;
     "-t")
       NEKOPS_T=!$NEKOPS_T
       gitneko-fresh
       ;;
     *)
-      echo "unknown parameter, -h for help"  
+      gitneko -h
       ;;
   esac
 }
