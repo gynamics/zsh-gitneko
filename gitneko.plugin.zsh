@@ -80,7 +80,7 @@ if [ -z $NEKOPS_ARG2 ]; then
   else
     NEKOPS_ARG2=$NEKOPS_ARG1
   fi
-fi 
+fi
 # apply status
 if [ -d ${NEKOPS_HEAD}/.git/rebase-apply ]; then
   # In Rebase-Apply State
@@ -94,7 +94,7 @@ if [ $stashcnt -gt 0 ]; then
 fi
 }
 
-# reference this function from reddit channel r/zsh 
+# reference this function from reddit channel r/zsh
 # https://www.reddit.com/r/zsh/comments/cgbm24/multiline_prompt_the_missing_ingredient/
 function prompt-length() {
  emulate -L zsh
@@ -112,7 +112,7 @@ function prompt-length() {
  echo $x
 }
 
-# reference this function from reddit channel r/zsh 
+# reference this function from reddit channel r/zsh
 # https://www.reddit.com/r/zsh/comments/cgbm24/multiline_prompt_the_missing_ingredient/
 function fill-line() {
  local left_len=$(prompt-length $1)
@@ -135,29 +135,35 @@ fi
 
 # set prompt
 if [[ -e $NEKOPS_PATH ]]; then
-  local left_bottom="${NEKOLOR_M}%#%b%f%k "
-  local right_bottom="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} "\
-"${NEKOLOR_W}~(^${NEKOPS_ARG2}"\
-"${NEKOLOR_W}ω${NEKOPS_ARG1}"\
-"${NEKOLOR_W}^)"
+  local priv="${NEKOLOR_M}%#%b%f%k "
+  local neko=""
+  neko+="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} "
+  neko+="${NEKOLOR_W}~(^${NEKOPS_ARG2}"
+  neko+="${NEKOLOR_W}ω${NEKOPS_ARG1}"
+  neko+="${NEKOLOR_W}^%)"
   # set left prompt
-  local left_top="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"\
-"${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
+  local path=""
+  path+="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"
+  path+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
   # set right prompt
-  local right_top="${NEKOLOR_C}ᛘ ${NEKOPS_BRCH} "\
-"${NEKOLOR_G}<${NEKOLOR_W}%)"
+  local branch=""
+  branch+="${NEKOLOR_C}ᛘ ${NEKOPS_BRCH} "
+  branch+="${NEKOLOR_G}<${NEKOLOR_W}%)"
+  # initialize prompt
+  PROMPT=""
   # python venv prompt support
   if [ -v VIRTUAL_ENV ]; then
-    left_top=$VIRTUAL_ENV_PROMPT$left_top
+    PROMPT+=$VIRTUAL_ENV_PROMPT
   fi
   # 2 line mode
   if $NEKOPS_2L ; then
-    PROMPT="$(fill-line ${left_top} ${right_top})"$'\n'"${left_bottom}"
-    RPROMPT="${right_bottom}"
+    PROMPT+="$(fill-line ${path} ${branch})"
+    PROMPT+=$'\n'"${priv}"
+    RPROMPT="${neko}"
   else
-    PROMPT="${left_top}${left_bottom}"
-    RPROMPT="${right_bottom}${right_top}"
-  fi   
+    PROMPT+="${path}${priv}"
+    RPROMPT="${neko}${branch}"
+  fi
 else # reset
   PROMPT=$NEKOPS_SAVL
   # python venv prompt support
