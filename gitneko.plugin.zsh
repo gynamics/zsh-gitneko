@@ -30,6 +30,22 @@ NEKOLOR_C='%B%F{cyan}'
 NEKOLOR_M='%B%F{magenta}'
 NEKOLOR_Y='%B%F{yellow}'
 NEKOLOR_W='%B%F{white}'
+# gitneko icons
+NEKOICON_MOUTH='w'
+NEKOICON_EAR='^'
+NEKOICON_LEFT='('
+NEKOICON_RIGHT='%)'
+NEKOICON_EYE_UNMERGED='6'
+NEKOICON_EYE_XMOD='*'
+NEKOICON_EYE_XYMOD='0'
+NEKOICON_EYE_IGNORED='-'
+NEKOICON_EYE_ERROR='e'
+NEKOICON_EYE_YMOD='*'
+NEKOICON_EYE_UNTRACKED="'"
+NEKOICON_EYE_COMMITTED='>'
+NEKOICON_EYE_CLEAN='<'
+NEKOICON_STASH='='
+NEKOICON_REBASING='R'
 
 # get git status and save it to NEKOPS
 function gitneko-get-status() {
@@ -42,26 +58,26 @@ local git_status=$(git --no-optional-locks status --porcelain=v1 .)
 # set the first argument
 if [[ $git_status =~ [MTADRC][\ ][\ ] ]]; then
   # X (index) Modified
-  NEKOPS_ARG1="${NEKOLOR_B}*"
+  NEKOPS_ARG1="${NEKOLOR_B}${NEKOICON_EYE_XMOD}"
 elif [[ $git_status =~ [MTARC][MTD][\ ] ]]; then
   # Both XY Modified
-  NEKOPS_ARG1="${NEKOLOR_G}0"
+  NEKOPS_ARG1="${NEKOLOR_G}${NEKOICON_EYE_XYMOD}"
 elif [[ $git_status =~ [AUD][AUD][\ ] ]]; then
   # Unmerged
-  NEKOPS_ARG1="${NEKOLOR_C}6"
+  NEKOPS_ARG1="${NEKOLOR_C}${NEKOICON_EYE_UNMERGED}"
 elif [[ $git_status =~ [X][\ ][\ ] ]]; then
   # Error
-  NEKOPS_ARG1="${NEKOLOR_R}e"
+  NEKOPS_ARG1="${NEKOLOR_R}${NEKOICON_EYE_ERROR}"
 else
   # Committed
-  NEKOPS_ARG1="${NEKOLOR_W}<"
+  NEKOPS_ARG1="${NEKOLOR_W}${NEKOICON_EYE_COMMITTED}"
 fi
 # set the second argument
 if [[ $git_status =~ [\ ][MTDRC][\ ] ]]; then
   # Y (work tree) Modified
-  NEKOPS_ARG2="${NEKOLOR_Y}*"
+  NEKOPS_ARG2="${NEKOLOR_Y}${NEKOICON_EYE_YMOD}"
   # if index clean, then display it to 1
-  if [[ $NEKOPS_ARG1 = "${NEKOLOR_W}<" ]]; then
+  if [[ $NEKOPS_ARG1 = "${NEKOLOR_W}${NEKOICON_EYE_COMMITTED}" ]]; then
     NEKOPS_ARG1=$NEKOPS_ARG2
     NEKOPS_ARG2=""
   fi
@@ -70,13 +86,13 @@ fi
 if [ -z $NEKOPS_ARG2 ]; then
   if [[ $git_status =~ [\?][\?][\ ] ]]; then
     # Untracked
-    NEKOPS_ARG2="${NEKOLOR_B}·"
+    NEKOPS_ARG2="${NEKOLOR_B}${NEKOICON_EYE_UNTRACKED}"
   elif [[ $git_status =~ [!][!][\ ] ]]; then
     # Ignored
-    NEKOPS_ARG2="${NEKOLOR_M}-"
-  elif [[ $NEKOPS_ARG1 = "${NEKOLOR_W}<" ]]; then
+    NEKOPS_ARG2="${NEKOLOR_M}${NEKOICON_EYE_IGNORED}"
+  elif [[ $NEKOPS_ARG1 = "${NEKOLOR_W}${NEKOICON_EYE_COMMITTED}" ]]; then
     # Clean
-    NEKOPS_ARG2="${NEKOLOR_W}>"
+    NEKOPS_ARG2="${NEKOLOR_W}${NEKOICON_EYE_CLEAN}"
   else
     NEKOPS_ARG2=$NEKOPS_ARG1
   fi
@@ -84,13 +100,13 @@ fi
 # apply status
 if [ -d ${NEKOPS_HEAD}/.git/rebase-apply ]; then
   # In Rebase-Apply State
-  NEKOPS_ARG3="${NEKOPS_ARG3} ${NEKOLOR_R}Ra"
+  NEKOPS_ARG3+="${NEKOLOR_R} ${NEKOICON_REBASING}"
 fi
 # stash status
 local stashcnt=$(git stash list|wc -l)
 if [ $stashcnt -gt 0 ]; then
   # Stashed
-  NEKOPS_ARG3="${NEKOPS_ARG3} ${NEKOLOR_Y}≅ ${stashcnt}"
+  NEKOPS_ARG3+="${NEKOLOR_Y} ${NEKOICON_STASH} ${stashcnt}"
 fi
 }
 
@@ -137,18 +153,18 @@ fi
 if [[ -e $NEKOPS_PATH ]]; then
   local priv="${NEKOLOR_M}%#%b%f%k "
   local neko=""
-  neko+="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} "
-  neko+="${NEKOLOR_W}~(^${NEKOPS_ARG2}"
-  neko+="${NEKOLOR_W}ω${NEKOPS_ARG1}"
-  neko+="${NEKOLOR_W}^%)"
+  neko+="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} ~"
+  neko+="${NEKOLOR_W}${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOPS_ARG1}"
+  neko+="${NEKOLOR_W}${NEKOICON_MOUTH=}${NEKOPS_ARG2}"
+  neko+="${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
   # set left prompt
   local path=""
   path+="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"
   path+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
   # set right prompt
-  local branch=""
-  branch+="${NEKOLOR_C}ᛘ ${NEKOPS_BRCH} "
-  branch+="${NEKOLOR_G}<${NEKOLOR_W}%)"
+  local gitpath=""
+  gitpath+=" ${NEKOPS_BRCH}"
+  gitpath+=" ${NEKOLOR_G}<${NEKOLOR_W}%)"
   # initialize prompt
   PROMPT=""
   # python venv prompt support
@@ -157,13 +173,12 @@ if [[ -e $NEKOPS_PATH ]]; then
   fi
   # 2 line mode
   if $NEKOPS_2L ; then
-    PROMPT+="$(fill-line ${path} ${branch})"
+    PROMPT+="$(fill-line "${path}" "${gitpath}")"
     PROMPT+=$'\n'"${priv}"
-    RPROMPT="${neko}"
   else
     PROMPT+="${path}${priv}"
-    RPROMPT="${neko}${branch}"
   fi
+  RPROMPT="${neko}"
 else # reset
   PROMPT=$NEKOPS_SAVL
   # python venv prompt support
@@ -253,23 +268,23 @@ function gitneko() {
       gitneko-fresh
       ;;
     "-h")
-      print "Hello, I am your git neko! (^@ω@^)"
+      print "Hello, I am your git neko! (^@${NEKOICON_MOUTH}@^)"
       print ""
       print -P "  eye | git status  | X (index) | Y (worktree) "
       print -P "  ----+-------------+-----------+--------------"
-      print -P "  (^${NEKOLOR_C}6%b%f%kω| Unmerged    | [ADU]     | [ADU]   "
-      print -P "  (^${NEKOLOR_B}*%b%f%kω| X Modified  | [MTADRC]  | [ ]     "
-      print -P "  (^${NEKOLOR_G}0%b%f%kω| XY Modified | [MTARC]   | [MTD]   "
-      print -P "  (^${NEKOLOR_M}-%b%f%kω| Ignored     | [!]       | [!]     "
-      print -P "  (^${NEKOLOR_R}e%b%f%kω| Error       | [X]       | [ ]     "
-      print -P "  (^${NEKOLOR_Y}*%b%f%kω| Y Modified  | [ ]       | [MTDRC] "
-      print -P "  (^${NEKOLOR_B}·%b%f%kω| Untracked   | [?]       | [?]     "
-      print -P "  (^${NEKOLOR_W}>%b%f%kω| Commited    | fallback  | fallback"
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_C}${NEKOICON_EYE_UNMERGED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Unmerged    | [ADU]     | [ADU]   "
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_B}${NEKOICON_EYE_XMOD}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| X Modified  | [MTADRC]  | [ ]     "
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_G}${NEKOICON_EYE_XYMOD}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| XY Modified | [MTARC]   | [MTD]   "
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_M}${NEKOICON_EYE_IGNORED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Ignored     | [!]       | [!]     "
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_R}${NEKOICON_EYE_ERROR}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Error       | [X]       | [ ]     "
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_Y}${NEKOICON_EYE_YMOD}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Y Modified  | [ ]       | [MTDRC] "
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_B}${NEKOICON_EYE_UNTRACKED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Untracked   | [?]       | [?]     "
+      print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_W}${NEKOICON_EYE_COMMITTED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Commited    | *         | *"
       print ""
       print -P "  toy | explanation            "
       print -P "  ----+------------------------"
-      print -P "  ${NEKOLOR_R}Ra%b%f%k  | In Rebase-Apply process"
-      print -P "  ${NEKOLOR_Y}≅ %b%f%k  | Stashed                "
+      print -P "  ${NEKOLOR_R}${NEKOICON_REBASING}  %b%f%k| In Rebase-Apply process"
+      print -P "  ${NEKOLOR_Y}${NEKOICON_STASH}  %b%f%k| Stashed                "
       print ""
       print "gitneko parameters:"
       print "  -f force prompt fresh"
