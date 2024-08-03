@@ -106,19 +106,21 @@ if [ -d ${NEKOPS_HEAD}/.git/rebase-apply ]; then
 fi
 # stash status
 local stashcnt=$(git stash list|wc -l)
-if [ $stashcnt -gt 0 ]; then
+if [[ $stashcnt -gt 0 ]]; then
   # Stashed
   NEKOPS_ARG3+=" ${NEKOLOR_Y}${NEKOICON_STASH}%b${stashcnt}"
-fi
-# commits ahead
-local ahead=$(git rev-list --count "${NEKOPS_BRCH}..${NEKOPS_HEAD}")
-if [ $ahead -gt 0 ]; then
-  NEKOPS_ARG3+=" ${NEKOLOR_G}${NEKOICON_AHEAD}%b${ahead}"
-fi
-# commits behind
-local behind=$(git rev-list --count "${NEKOPS_HEAD}..${NEKOPS_BRCH}")
-if [ $behind -gt 0 ]; then
-  NEKOPS_ARG3+=" ${NEKOLOR_B}${NEKOICON_BEHIND}%b${behind}"
+fi 
+if [[ -n $NEKOPS_HASH ]]; then
+  # commits ahead
+  local ahead=$(git rev-list --count "${NEKOPS_HASH}..${NEKOPS_HEAD}")
+  if [[ $ahead -gt 0 ]]; then
+    NEKOPS_ARG3+=" ${NEKOLOR_G}${NEKOICON_AHEAD}%b${ahead}"
+  fi
+  # commits behind
+  local behind=$(git rev-list --count "${NEKOPS_HEAD}..${NEKOPS_HASH}")
+  if [[ $behind -gt 0 ]]; then
+    NEKOPS_ARG3+=" ${NEKOLOR_B}${NEKOICON_BEHIND}%b${behind}"
+  fi
 fi
 }
 
@@ -175,8 +177,8 @@ if [[ -e $NEKOPS_PATH ]]; then
   path+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
   # set right prompt
   local gitpath=""
-  if [ -z $NEKOPS_BRCH ]; then
-    if [ -z $NEKOPS_HASH ]; then
+  if [[ -z $NEKOPS_BRCH ]]; then
+    if [[ -z $NEKOPS_HASH ]]; then
       # no upstream found
       gitpath+="${NEKOLOR_R}*"
     else
@@ -236,13 +238,11 @@ if $(git rev-parse --is-inside-work-tree 2>/dev/null); then
   fi
   # set upstream branch information
   NEKOPS_BRCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
-  if [ -z $NEKOPS_BRCH ]; then
-    # is there a hash tag for us?
-    NEKOPS_HASH=$(git describe --tags 2>/dev/null)
-    if [ -z $NEKOPS_HASH ]; then
-      # simply use its commit hash value
-      NEKOPS_HASH=$(git rev-parse --short @{u} 2>/dev/null)
-    fi
+  # is there a hash tag for us?
+  NEKOPS_HASH=$(git describe --tags 2>/dev/null)
+  if [ -z $NEKOPS_HASH ]; then
+    # simply use its commit hash value
+    NEKOPS_HASH=$(git rev-parse --short @{u} 2>/dev/null)
   fi
   gitneko-get-status
 fi
