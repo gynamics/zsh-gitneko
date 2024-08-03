@@ -1,7 +1,7 @@
 # gitneko
 a zsh script that shows a neko prompt `(^>ω<^)` indicating git status
 
-![demo](https://exiled-images.pages.dev/file/a75dee2a01c2ba206d1cc.png)
+![demo](https://exiled-images.pages.dev/file/ec6d76b698b8143221a40.png)
 
 ## features
 - [X] display a kawaii neko
