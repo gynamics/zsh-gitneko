@@ -11,7 +11,6 @@ NEKOPS_T=true
 NEKOPS_2L=false
 # cascade mode toggle
 NEKOPS_2C=false
-
 # save old prompts
 NEKOPS_SAVL=''
 NEKOPS_SAVR=''
@@ -19,6 +18,7 @@ NEKOPS_SAVR=''
 NEKOPS_HEAD=''
 NEKOPS_PATH=''
 NEKOPS_BRCH=''
+NEKOPS_HASH=''
 NEKOPS_ARG1=''
 NEKOPS_ARG2=''
 NEKOPS_ARG3=''
@@ -46,6 +46,8 @@ NEKOICON_EYE_COMMITTED='>'
 NEKOICON_EYE_CLEAN='<'
 NEKOICON_STASH='='
 NEKOICON_REBASING='R'
+NEKOICON_AHEAD='+'
+NEKOICON_BEHIND='-'
 
 # get git status and save it to NEKOPS
 function gitneko-get-status() {
@@ -100,13 +102,23 @@ fi
 # apply status
 if [ -d ${NEKOPS_HEAD}/.git/rebase-apply ]; then
   # In Rebase-Apply State
-  NEKOPS_ARG3+="${NEKOLOR_R} ${NEKOICON_REBASING}"
+  NEKOPS_ARG3+=" ${NEKOLOR_R}${NEKOICON_REBASING}"
 fi
 # stash status
 local stashcnt=$(git stash list|wc -l)
 if [ $stashcnt -gt 0 ]; then
   # Stashed
-  NEKOPS_ARG3+="${NEKOLOR_Y} ${NEKOICON_STASH} ${stashcnt}"
+  NEKOPS_ARG3+=" ${NEKOLOR_Y}${NEKOICON_STASH}%b${stashcnt}"
+fi
+# commits ahead
+local ahead=$(git rev-list --count "${NEKOPS_BRCH}..${NEKOPS_HEAD}")
+if [ $ahead -gt 0 ]; then
+  NEKOPS_ARG3+=" ${NEKOLOR_G}${NEKOICON_AHEAD}%b${ahead}"
+fi
+# commits behind
+local behind=$(git rev-list --count "${NEKOPS_HEAD}..${NEKOPS_BRCH}")
+if [ $behind -gt 0 ]; then
+  NEKOPS_ARG3+=" ${NEKOLOR_B}${NEKOICON_BEHIND}%b${behind}"
 fi
 }
 
@@ -153,7 +165,7 @@ fi
 if [[ -e $NEKOPS_PATH ]]; then
   local priv="${NEKOLOR_M}%#%b%f%k "
   local neko=""
-  neko+="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} ~"
+  neko+="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} ${NEKOLOR_W}~"
   neko+="${NEKOLOR_W}${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOPS_ARG1}"
   neko+="${NEKOLOR_W}${NEKOICON_MOUTH=}${NEKOPS_ARG2}"
   neko+="${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
@@ -163,7 +175,17 @@ if [[ -e $NEKOPS_PATH ]]; then
   path+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
   # set right prompt
   local gitpath=""
-  gitpath+=" ${NEKOPS_BRCH}"
+  if [ -z $NEKOPS_BRCH ]; then
+    if [ -z $NEKOPS_HASH ]; then
+      # no upstream found
+      gitpath+="${NEKOLOR_R}*"
+    else
+      gitpath+="${NEKOLOR_Y}${NEKOPS_HASH}"
+    fi
+  else
+    gitpath+="${NEKOLOR_G}${NEKOPS_BRCH}"
+  fi
+
   gitpath+=" ${NEKOLOR_G}<${NEKOLOR_W}%)"
   # initialize prompt
   PROMPT=""
@@ -197,6 +219,7 @@ function gitneko-fresh() {
 NEKOPS_HEAD=''
 NEKOPS_PATH=''
 NEKOPS_BRCH=''
+NEKOPS_HASH=''
 if ! $NEKOPS_T; then
   # not enabled
   gitneko-set-prompt
@@ -211,24 +234,15 @@ if $(git rev-parse --is-inside-work-tree 2>/dev/null); then
     # try to use a commit hash
     NEKOPS_HEAD=$(git rev-parse --short HEAD 2>/dev/null)
   fi
-  # is HEAD a symbolic name? (otherwise it is detached)
-  if (git symbolic-ref -q HEAD >/dev/null); then
-    # prefer a symbolic name
-    NEKOPS_BRCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
-    if [ -z $NEKOPS_BRCH ]; then
-      # try to find a commit hash
-      NEKOPS_BRCH=$(git rev-parse --short @{u} 2>/dev/null)
-      if [ -z $NEKOPS_BRCH ]; then
-        # no upstream found
-        NEKOPS_BRCH="${NEKOLOR_R}*"
-      else
-        NEKOPS_BRCH="${NEKOLOR_Y}${NEKOPS_BRCH}"
-      fi
-    else
-      NEKOPS_BRCH="${NEKOLOR_G}${NEKOPS_BRCH}"
+  # set upstream branch information
+  NEKOPS_BRCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+  if [ -z $NEKOPS_BRCH ]; then
+    # is there a hash tag for us?
+    NEKOPS_HASH=$(git describe --tags 2>/dev/null)
+    if [ -z $NEKOPS_HASH ]; then
+      # simply use its commit hash value
+      NEKOPS_HASH=$(git rev-parse --short @{u} 2>/dev/null)
     fi
-  else
-    NEKOPS_BRCH='detached' # detached
   fi
   gitneko-get-status
 fi
@@ -285,6 +299,8 @@ function gitneko() {
       print -P "  ----+------------------------"
       print -P "  ${NEKOLOR_R}${NEKOICON_REBASING}  %b%f%k| In Rebase-Apply process"
       print -P "  ${NEKOLOR_Y}${NEKOICON_STASH}  %b%f%k| Stashed                "
+      print -P "  ${NEKOLOR_G}${NEKOICON_AHEAD}  %b%f%k| Commits ahead          "
+      print -P "  ${NEKOLOR_B}${NEKOICON_BEHIND}  %b%f%k| Commits behind        "
       print ""
       print "gitneko parameters:"
       print "  -f force prompt fresh"
