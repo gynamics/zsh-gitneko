@@ -100,7 +100,8 @@ if [ -z $NEKOPS_ARG2 ]; then
   fi
 fi
 # apply status
-if [ -d ${NEKOPS_HEAD}/.git/rebase-apply ]; then
+if [[ -d ${NEKOPS_HEAD}/.git/rebase-apply ]] || \
+   [[ -d ${NEKOPS_HEAD}/.git/rebase-merge ]]; then
   # In Rebase-Apply State
   NEKOPS_ARG3+=" ${NEKOLOR_R}${NEKOICON_REBASING}"
 fi
