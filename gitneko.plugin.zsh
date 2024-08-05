@@ -312,7 +312,11 @@ function gitneko() {
       print ""
       ;;
     "-t")
-      NEKOPS_T=!$NEKOPS_T
+      if $NEKOPS_T; then
+        NEKOPS_T=false
+      else
+        NEKOPS_T=true
+      fi
       gitneko-fresh
       ;;
     *)
