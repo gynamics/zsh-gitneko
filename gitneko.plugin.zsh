@@ -3,6 +3,7 @@
 
 if ! [[ -x /usr/bin/git ]]; then
   echo "\e[31mgit not detected, gitneko will be disabled!\e[0m" >&2
+  exit
 fi
 
 # toggle
@@ -110,7 +111,7 @@ local stashcnt=$(git stash list|wc -l)
 if [[ $stashcnt -gt 0 ]]; then
   # Stashed
   NEKOPS_ARG3+=" ${NEKOLOR_Y}${NEKOICON_STASH}%b${stashcnt}"
-fi 
+fi
 if [[ -n $NEKOPS_HASH ]]; then
   # commits ahead
   local ahead=$(git rev-list --count "${NEKOPS_HASH}..${NEKOPS_HEAD}")
