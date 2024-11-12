@@ -1,0 +1,13 @@
+#compdef gitneko
+
+_gitneko() {
+    local -a options=(
+        "-f[force prompt fresh]"
+        "-h[display help]"
+        "-t[toggle prompt]"
+        "-2[toggle 2 line mode]"
+        "-c[toggle cascade mode]"
+    )
+
+    _arguments "${options[@]}"
+}
