@@ -154,7 +154,7 @@ function fill-line() {
  echo ${1}${pad}${2}
 }
 
-function gitneko-set-prompt() {
+function set-prompt:gitneko() {
 # save prompts
 if [[ -z $NEKOPS_SAVL ]] && [[ -z $NEKOPS_SAVR ]]; then
   NEKOPS_SAVL=$PROMPT
@@ -224,36 +224,33 @@ NEKOPS_HEAD=''
 NEKOPS_PATH=''
 NEKOPS_BRCH=''
 NEKOPS_HASH=''
-if ! $NEKOPS_T; then
-  # not enabled
-  gitneko-set-prompt
-  return
-fi
-if $(git rev-parse --is-inside-work-tree 2>/dev/null); then
-  # inside a git worktree
-  NEKOPS_PATH=$(git rev-parse --show-toplevel)
-  # prefer a symbolic ref name
-  NEKOPS_HEAD=$(git branch --show-current)
-  if [ -z $NEKOPS_HEAD ]; then
-    # try to use a commit hash
-    NEKOPS_HEAD=$(git rev-parse --short HEAD 2>/dev/null)
+if $NEKOPS_T; then
+  if $(git rev-parse --is-inside-work-tree 2>/dev/null); then
+    # inside a git worktree
+    NEKOPS_PATH=$(git rev-parse --show-toplevel)
+    # prefer a symbolic ref name
+    NEKOPS_HEAD=$(git branch --show-current)
+    if [ -z $NEKOPS_HEAD ]; then
+        # try to use a commit hash
+        NEKOPS_HEAD=$(git rev-parse --short HEAD 2>/dev/null)
+    fi
+    # set upstream branch information
+    NEKOPS_BRCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+    # is there a hash tag for us?
+    NEKOPS_HASH=$(git describe --tags 2>/dev/null)
+    if [ -z $NEKOPS_HASH ]; then
+        # simply use its commit hash value
+        NEKOPS_HASH=$(git rev-parse --short @{u} 2>/dev/null)
+    fi
+    gitneko-get-status
   fi
-  # set upstream branch information
-  NEKOPS_BRCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
-  # is there a hash tag for us?
-  NEKOPS_HASH=$(git describe --tags 2>/dev/null)
-  if [ -z $NEKOPS_HASH ]; then
-    # simply use its commit hash value
-    NEKOPS_HASH=$(git rev-parse --short @{u} 2>/dev/null)
-  fi
-  gitneko-get-status
 fi
 # set up prompt
-gitneko-set-prompt
+set-prompt:gitneko
 }
 
 function gitneko-erase() {
-  if $NEKOPS_2C ; then
+  if $NEKOPS_T && $NEKOPS_2C ; then
     if $NEKOPS_2L ; then
       print '\e[1A\e[K\e[1A\e[K'
     else
