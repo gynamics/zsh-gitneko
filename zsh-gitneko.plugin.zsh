@@ -174,23 +174,27 @@ function set-prompt:gitneko() {
         neko+="${NEKOLOR_W}${NEKOICON_MOUTH}${NEKOPS_ARG2}"
         neko+="${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
         # set left prompt
-        local path=""
-        path+="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"
-        path+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
-        # set right prompt
-        local gitpath=""
-        if [[ -z $NEKOPS_BRCH ]]; then
-            if [[ -z $NEKOPS_HASH ]]; then
-                # no upstream found
-                gitpath+="${NEKOLOR_R}*"
-            else
-                gitpath+="${NEKOLOR_Y}${NEKOPS_HASH}"
-            fi
+        local lgitinfo=""
+        lgitinfo+="${NEKOLOR_W}("
+        if ! $NEKOPS_2L && [[ $NEKOPS_HASH ]]; then
+            lgitinfo+="${NEKOLOR_Y}${NEKOPS_HASH}"
         else
-            gitpath+="${NEKOLOR_G}${NEKOPS_BRCH}"
+            lgitinfo+="${NEKOLOR_B}${NEKOPS_HEAD}"
         fi
 
-        gitpath+=" ${NEKOLOR_G}<${NEKOLOR_W}%)"
+        lgitinfo+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
+        # set right prompt
+        local rgitinfo=""
+        if [[ $NEKOPS_BRCH ]]; then
+            rgitinfo+="${NEKOLOR_G}${NEKOPS_BRCH}"
+        elif [[ $NEKOPS_HASH ]]; then
+            rgitinfo+="${NEKOLOR_Y}${NEKOPS_HASH}"
+        else
+            # no upstream found
+            rgitinfo+="${NEKOLOR_R}*"
+        fi
+
+        rgitinfo+=" ${NEKOLOR_G}<${NEKOLOR_W}%)"
         # initialize prompt
         PROMPT=""
         # python venv prompt support
@@ -199,10 +203,10 @@ function set-prompt:gitneko() {
         fi
         # 2 line mode
         if $NEKOPS_2L ; then
-            PROMPT+="$(fill-line "${path}" "${gitpath}")"
+            PROMPT+="$(fill-line "${lgitinfo}" "${rgitinfo}")"
             PROMPT+=$'\n'"${priv}"
         else
-            PROMPT+="${path}${priv}"
+            PROMPT+="${lgitinfo}${priv}"
         fi
         RPROMPT="${neko}"
     else # reset
