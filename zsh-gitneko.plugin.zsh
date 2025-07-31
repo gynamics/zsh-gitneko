@@ -197,16 +197,12 @@ function set-prompt:gitneko() {
         rgitinfo+=" ${NEKOLOR_G}<${NEKOLOR_W}%)"
         # initialize prompt
         PROMPT=""
-        # python venv prompt support
-        if [ -v VIRTUAL_ENV ]; then
-            PROMPT+=$VIRTUAL_ENV_PROMPT
-        fi
         # 2 line mode
         if $NEKOPS_2L ; then
-            PROMPT+="$(fill-line "${lgitinfo}" "${rgitinfo}")"
+            PROMPT+="$(fill-line "${VIRTUAL_ENV_PROMPT}""${lgitinfo}" "${rgitinfo}")"
             PROMPT+=$'\n'"${priv}"
         else
-            PROMPT+="${lgitinfo}${priv}"
+            PROMPT+="${VIRTUAL_ENV_PROMPT}${lgitinfo}${priv}"
         fi
         RPROMPT="${neko}"
     else # reset
