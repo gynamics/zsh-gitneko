@@ -13,8 +13,8 @@ NEKOPS_2L=false
 # cascade mode toggle
 NEKOPS_2C=false
 # save old prompts
-NEKOPS_SAVL=''
-NEKOPS_SAVR=''
+: ${NEKOPS_SAVL:=''}
+: ${NEKOPS_SAVR:=''}
 # gitneko prompt
 NEKOPS_HEAD=''
 NEKOPS_PATH=''
