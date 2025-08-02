@@ -259,6 +259,10 @@ function gitneko-erase() {
     fi
 }
 
+function halfneko() {
+    echo "${NEKOICON_LEFT}${NEKOICON_EAR}$@${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k"
+}
+
 function gitneko() {
     case $1 in
         "-2")
@@ -285,21 +289,33 @@ function gitneko() {
             print ""
             print -P "  eye | git status  | X (index) | Y (worktree) "
             print -P "  ----+-------------+-----------+--------------"
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_C}${NEKOICON_EYE_UNMERGED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Unmerged    | [ADU]     | [ADU]   "
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_B}${NEKOICON_EYE_XMOD}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| X Modified  | [MTADRC]  | [ ]     "
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_G}${NEKOICON_EYE_XYMOD}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| XY Modified | [MTARC]   | [MTD]   "
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_M}${NEKOICON_EYE_IGNORED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Ignored     | [!]       | [!]     "
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_R}${NEKOICON_EYE_ERROR}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Error       | [X]       | [ ]     "
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_Y}${NEKOICON_EYE_YMOD}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Y Modified  | [ ]       | [MTDRC] "
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_B}${NEKOICON_EYE_UNTRACKED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Untracked   | [?]       | [?]     "
-            print -P "  ${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOLOR_W}${NEKOICON_EYE_COMMITTED}${NEKOLOR_W}${NEKOICON_MOUTH}%b%f%k| Commited    | *         | *"
+            print -P "  $(halfneko ${NEKOLOR_C}${NEKOICON_EYE_UNMERGED})" \
+                           "| Unmerged    | [ADU]     | [ADU]   "
+            print -P "  $(halfneko ${NEKOLOR_B}${NEKOICON_EYE_XMOD})" \
+                           "| X Modified  | [MTADRC]  | [ ]     "
+            print -P "  $(halfneko ${NEKOLOR_G}${NEKOICON_EYE_XYMOD})" \
+                           "| XY Modified | [MTARC]   | [MTD]   "
+            print -P "  $(halfneko ${NEKOLOR_M}${NEKOICON_EYE_IGNORED})" \
+                           "| Ignored     | [!]       | [!]     "
+            print -P "  $(halfneko ${NEKOLOR_R}${NEKOICON_EYE_ERROR})" \
+                           "| Error       | [X]       | [ ]     "
+            print -P "  $(halfneko ${NEKOLOR_Y}${NEKOICON_EYE_YMOD})" \
+                           "| Y Modified  | [ ]       | [MTDRC] "
+            print -P "  $(halfneko ${NEKOLOR_B}${NEKOICON_EYE_UNTRACKED})" \
+                           "| Untracked   | [?]       | [?]     "
+            print -P "  $(halfneko ${NEKOLOR_W}${NEKOICON_EYE_COMMITTED})" \
+                           "| Commited    | *         | *"
             print ""
             print -P "  toy | explanation            "
             print -P "  ----+------------------------"
-            print -P "  ${NEKOLOR_R}${NEKOICON_REBASING}  %b%f%k| In Rebase-Apply process"
-            print -P "  ${NEKOLOR_Y}${NEKOICON_STASH}  %b%f%k| Stashed                "
-            print -P "  ${NEKOLOR_G}${NEKOICON_AHEAD}  %b%f%k| Commits ahead          "
-            print -P "  ${NEKOLOR_B}${NEKOICON_BEHIND}  %b%f%k| Commits behind        "
+            print -P "  ${NEKOLOR_R}${NEKOICON_REBASING}  %b%f%k" \
+                           "| In Rebase-Apply process"
+            print -P "  ${NEKOLOR_Y}${NEKOICON_STASH}  %b%f%k" \
+                           "| Stashed                "
+            print -P "  ${NEKOLOR_G}${NEKOICON_AHEAD}  %b%f%k" \
+                           "| Commits ahead          "
+            print -P "  ${NEKOLOR_B}${NEKOICON_BEHIND}  %b%f%k" \
+                           "| Commits behind        "
             print ""
             print "gitneko parameters:"
             print "  -f force prompt fresh"
