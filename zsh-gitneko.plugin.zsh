@@ -101,8 +101,8 @@ function gitneko-get-status() {
         fi
     fi
     # apply status
-    if [[ -d ${NEKOPS_HEAD}/.git/rebase-apply ]] || \
-           [[ -d ${NEKOPS_HEAD}/.git/rebase-merge ]]; then
+    if [[ -d ${NEKOPS_PATH}/.git/rebase-apply ]] || \
+           [[ -d ${NEKOPS_PATH}/.git/rebase-merge ]]; then
         # In Rebase-Apply State
         NEKOPS_ARG3+=" ${NEKOLOR_R}${NEKOICON_REBASING}"
     fi
@@ -175,22 +175,22 @@ function set-prompt:gitneko() {
         neko+="${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
         # set left prompt
         local lgitinfo=""
-        lgitinfo+="${NEKOLOR_W}("
-        if ! $NEKOPS_2L && [[ $NEKOPS_HASH ]]; then
-            lgitinfo+="${NEKOLOR_Y}${NEKOPS_HASH}"
-        else
-            lgitinfo+="${NEKOLOR_B}${NEKOPS_HEAD}"
-        fi
-
+        # python venv prompt support
+        lgitinfo+="${VIRTUAL_ENV_PROMPT}"
+        # show HEAD branch/commit on the left
+        lgitinfo+="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"
+        # following PWD
         lgitinfo+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
         # set right prompt
         local rgitinfo=""
         if [[ $NEKOPS_BRCH ]]; then
+            # there is a remote branch
             rgitinfo+="${NEKOLOR_G}${NEKOPS_BRCH}"
         elif [[ $NEKOPS_HASH ]]; then
+            # there is a remote commit
             rgitinfo+="${NEKOLOR_Y}${NEKOPS_HASH}"
         else
-            # no upstream found
+            # no upstream found (local repository/broken upstream)
             rgitinfo+="${NEKOLOR_R}*"
         fi
 
@@ -199,10 +199,10 @@ function set-prompt:gitneko() {
         PROMPT=""
         # 2 line mode
         if $NEKOPS_2L ; then
-            PROMPT+="$(fill-line "${VIRTUAL_ENV_PROMPT}""${lgitinfo}" "${rgitinfo}")"
+            PROMPT+="$(fill-line "${lgitinfo}" "${rgitinfo}")"
             PROMPT+=$'\n'"${priv}"
         else
-            PROMPT+="${VIRTUAL_ENV_PROMPT}${lgitinfo}${priv}"
+            PROMPT+="${lgitinfo}${priv}"
         fi
         RPROMPT="${neko}"
     else # reset
