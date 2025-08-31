@@ -101,8 +101,8 @@ function gitneko-get-status() {
         fi
     fi
     # apply status
-    if [[ -d ${NEKOPS_PATH}/.git/rebase-apply ]] || \
-           [[ -d ${NEKOPS_PATH}/.git/rebase-merge ]]; then
+    if [[ -d "${NEKOPS_PATH}/.git/rebase-apply" ]] || \
+           [[ -d "${NEKOPS_PATH}/.git/rebase-merge" ]]; then
         # In Rebase-Apply State
         NEKOPS_ARG3+=" ${NEKOLOR_R}${NEKOICON_REBASING}"
     fi
@@ -156,17 +156,19 @@ function fill-line() {
 
 function set-prompt:gitneko() {
     # save prompts
-    if [[ -z $NEKOPS_SAVL ]] && [[ -z $NEKOPS_SAVR ]]; then
-        NEKOPS_SAVL=$PROMPT
-        # python venv prompt support
-        if [ -v VIRTUAL_ENV ]; then
-            NEKOPS_SAVL=$_OLD_VIRTUAL_PS1
+    if [[ -z "$NEKOPS_SAVL" ]] && [[ -z "$NEKOPS_SAVR" ]]; then
+        if [[ -v VIRTUAL_ENV ]]; then
+            NEKOPS_SAVL="${PROMPT#*) }"
+        elif [[ -v CONDA_PREFIX ]]; then
+            NEKOPS_SAVL="${PROMPT#*) }"
+        else
+            NEKOPS_SAVL="$PROMPT"
         fi
-        NEKOPS_SAVR=$RPROMPT
+        NEKOPS_SAVR="$RPROMPT"
     fi
 
     # set prompt
-    if [[ -e $NEKOPS_PATH ]]; then
+    if [[ -e "$NEKOPS_PATH" ]]; then
         local priv="${NEKOLOR_M}%#%b%f%k "
         local neko=""
         neko+="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} ${NEKOLOR_W}~"
@@ -175,8 +177,13 @@ function set-prompt:gitneko() {
         neko+="${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
         # set left prompt
         local lgitinfo=""
-        # python venv prompt support
-        lgitinfo+="${VIRTUAL_ENV_PROMPT}"
+        if [[ -v VIRTUAL_ENV ]]; then
+            # python venv prompt support
+            lgitinfo+="(${VIRTUAL_ENV_PROMPT}) "
+        elif [[ -v CONDA_PREFIX ]]; then
+            # conda prompt support
+            lgitinfo+="(${CONDA_PROMPT_MODIFIER}) "
+        fi
         # show HEAD branch/commit on the left
         lgitinfo+="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"
         # following PWD
@@ -206,11 +213,12 @@ function set-prompt:gitneko() {
         fi
         RPROMPT="${neko}"
     else # reset
-        PROMPT=$NEKOPS_SAVL
-        # python venv prompt support
-        if [ -v VIRTUAL_ENV ]; then
-            _OLD_VIRTUAL_PS1=$NEKOPS_SAVL
-            PROMPT=$VIRTUAL_ENV_PROMPT$PROMPT
+        if [[ -v VIRTUAL_ENV ]]; then
+            PROMPT="($VIRTUAL_ENV_PROMPT) $NEKOPS_SAVL"
+        elif [[ -v CONDA_PREFIX ]]; then
+            PROMPT="($CONDA_PROMPT_MODIFIER) $NEKOPS_SAVL"
+        else
+            PROMPT="$NEKOPS_SAVL"
         fi
         RPROMPT=$NEKOPS_SAVR
         # clear save
