@@ -185,9 +185,10 @@ function set-prompt:gitneko() {
             lgitinfo+="(${CONDA_PROMPT_MODIFIER}) "
         fi
         # show HEAD branch/commit on the left
-        lgitinfo+="${NEKOLOR_W}(${NEKOLOR_B}${NEKOPS_HEAD}"
+        lgitinfo+="${NEKOLOR_W}(${NEKOLOR_C}${NEKOPS_HEAD}"
         # following PWD
-        lgitinfo+="${NEKOLOR_C}${PWD#$NEKOPS_PATH} "
+        lgitinfo+="${NEKOLOR_W}@${NEKOLOR_B}${NEKOPS_PATH}"
+        lgitinfo+="${NEKOLOR_M}${PWD#$NEKOPS_PATH} "
         # set right prompt
         local rgitinfo=""
         if [[ $NEKOPS_BRCH ]]; then
