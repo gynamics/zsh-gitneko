@@ -176,33 +176,57 @@ function set-prompt:gitneko() {
         neko+="${NEKOLOR_W}${NEKOICON_MOUTH}${NEKOPS_ARG2}"
         neko+="${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
         # set left prompt
-        local lgitinfo=""
-        if [[ -v VIRTUAL_ENV ]]; then
-            # python venv prompt support
-            lgitinfo+="(${VIRTUAL_ENV_PROMPT}) "
-        elif [[ -v CONDA_PREFIX ]]; then
-            # conda prompt support
-            lgitinfo+="(${CONDA_PROMPT_MODIFIER}) "
-        fi
-        # show HEAD branch/commit on the left
-        lgitinfo+="${NEKOLOR_W}(${NEKOLOR_C}${NEKOPS_HEAD}"
-        # following PWD
-        lgitinfo+="${NEKOLOR_W}@${NEKOLOR_B}${NEKOPS_PATH}"
-        lgitinfo+="${NEKOLOR_M}${PWD#$NEKOPS_PATH} "
-        # set right prompt
         local rgitinfo=""
+        local rlen
+        # set gitinfo at right
         if [[ $NEKOPS_BRCH ]]; then
             # there is a remote branch
             rgitinfo+="${NEKOLOR_G}${NEKOPS_BRCH}"
+            rlen=${#NEKOPS_BRCH}
         elif [[ $NEKOPS_HASH ]]; then
             # there is a remote commit
             rgitinfo+="${NEKOLOR_Y}${NEKOPS_HASH}"
+            rlen=${#NEKOPS_HASH}
         else
             # no upstream found (local repository/broken upstream)
             rgitinfo+="${NEKOLOR_R}*"
+            rlen=1
+        fi
+        rgitinfo+=" ${NEKOLOR_G}<${NEKOLOR_W}%)"
+
+        # set gitinfo at left
+        local lgitinfo=""
+        # python venv prompt support
+        if [[ -v VIRTUAL_ENV ]]; then
+            lgitinfo+="(${VIRTUAL_ENV_PROMPT}) "
         fi
 
-        rgitinfo+=" ${NEKOLOR_G}<${NEKOLOR_W}%)"
+        # conda prompt support
+        if [[ -v CONDA_PREFIX ]]; then
+            lgitinfo+="(${CONDA_PROMPT_MODIFIER}) "
+        fi
+
+        # show HEAD branch/commit on the left
+        lgitinfo+="${NEKOLOR_W}(${NEKOLOR_C}${NEKOPS_HEAD}${NEKOLOR_W}@"
+        local splen
+        local max_len
+        if $NEKOPS_2L; then
+            splen=$((4 + ${#NEKOPS_HEAD} + rlen))
+            max_len=$((COLUMNS - splen))
+        else
+            splen=$((4 + ${#NEKOPS_HEAD}))
+            max_len=$(((COLUMNS - splen) * 6 / 10))
+        fi
+        # show PWD if current terminal is wide enough
+        if [[ ${#PWD/#~/\~\/} < $max_len ]]; then
+            lgitinfo+="${NEKOLOR_B}${NEKOPS_PATH}${NEKOLOR_M}${PWD#$NEKOPS_PATH} "
+        elif [[ ${#PWD/#$NEKOPS_PATH} < $max_len ]]; then
+            lgitinfo+="${NEKOLOR_M}${PWD#$NEKOPS_PATH} "
+        elif [[ $max_len > 10 ]]; then
+            lgitinfo+="${NEKOLOR_B}...${NEKOLOR_M}${PWD: -${max_len}} "
+        else
+            lgitinfo="${lgitinfo%@} "
+        fi
         # initialize prompt
         PROMPT=""
         # 2 line mode
