@@ -210,7 +210,7 @@ function set-prompt:gitneko() {
 
         # conda prompt support
         if [[ -v CONDA_PREFIX ]]; then
-            lgitinfo+="(${CONDA_PROMPT_MODIFIER}) "
+            lgitinfo+="${CONDA_PROMPT_MODIFIER}"
         fi
 
         # show HEAD branch/commit on the left
@@ -248,7 +248,7 @@ function set-prompt:gitneko() {
         if [[ -v VIRTUAL_ENV ]]; then
             PROMPT="($VIRTUAL_ENV_PROMPT) $NEKOPS_SAVL"
         elif [[ -v CONDA_PREFIX ]]; then
-            PROMPT="($CONDA_PROMPT_MODIFIER) $NEKOPS_SAVL"
+            PROMPT="$CONDA_PROMPT_MODIFIER$NEKOPS_SAVL"
         else
             PROMPT="$NEKOPS_SAVL"
         fi
