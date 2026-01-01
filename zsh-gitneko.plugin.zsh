@@ -8,6 +8,8 @@ fi
 
 # toggle
 NEKOPS_T=true
+# prompt toggle
+NEKOPS_PS_T=false
 # two line mode toggle
 NEKOPS_2L=false
 # cascade mode toggle
@@ -23,6 +25,7 @@ NEKOPS_HASH=''
 NEKOPS_ARG1=''
 NEKOPS_ARG2=''
 NEKOPS_ARG3=''
+NEKOPS_NEKO=''
 # zsh prompt colors
 NEKOLOR_R='%B%F{red}'
 NEKOLOR_G='%B%F{green}'
@@ -126,6 +129,16 @@ function gitneko-get-status() {
     fi
 }
 
+function gitneko-update-neko() {
+    local neko=(
+        "${NEKOPS_ARG3} ${NEKOLOR_W}~"
+        "${NEKOLOR_W}${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOPS_ARG1}"
+        "${NEKOLOR_W}${NEKOICON_MOUTH}${NEKOPS_ARG2}"
+        "${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
+    )
+    NEKOPS_NEKO="${(j::)neko}"
+}
+
 # reference this function from reddit channel r/zsh
 # https://www.reddit.com/r/zsh/comments/cgbm24/multiline_prompt_the_missing_ingredient/
 function prompt-length() {
@@ -170,12 +183,6 @@ function set-prompt:gitneko() {
     # set prompt
     if [[ -e "$NEKOPS_PATH" ]]; then
         local priv="${NEKOLOR_M}%#%b%f%k "
-        local neko=""
-        neko+="%(?. .${NEKOLOR_R}%?)${NEKOPS_ARG3} ${NEKOLOR_W}~"
-        neko+="${NEKOLOR_W}${NEKOICON_LEFT}${NEKOICON_EAR}${NEKOPS_ARG1}"
-        neko+="${NEKOLOR_W}${NEKOICON_MOUTH}${NEKOPS_ARG2}"
-        neko+="${NEKOLOR_W}${NEKOICON_EAR}${NEKOICON_RIGHT}"
-        # set left prompt
         local rgitinfo=""
         local rlen
         # set gitinfo at right
@@ -230,13 +237,13 @@ function set-prompt:gitneko() {
         # initialize prompt
         PROMPT=""
         # 2 line mode
-        if $NEKOPS_2L ; then
+        if $NEKOPS_2L; then
             PROMPT+="$(fill-line "${lgitinfo}" "${rgitinfo}")"
             PROMPT+=$'\n'"${priv}"
         else
             PROMPT+="${lgitinfo}${priv}"
         fi
-        RPROMPT="${neko}"
+        RPROMPT="%(?. .${NEKOLOR_R}%?)${NEKOPS_NEKO}"
     else # reset
         if [[ -v VIRTUAL_ENV ]]; then
             PROMPT="($VIRTUAL_ENV_PROMPT) $NEKOPS_SAVL"
@@ -278,13 +285,17 @@ function gitneko-fresh() {
             gitneko-get-status
         fi
     fi
+    # update widgets
+    gitneko-update-neko
     # set up prompt
-    set-prompt:gitneko
+    if $NEKOPS_PS_T; then
+        set-prompt:gitneko
+    fi
 }
 
 function gitneko-erase() {
-    if $NEKOPS_T && $NEKOPS_2C ; then
-        if $NEKOPS_2L ; then
+    if $NEKOPS_T && $NEKOPS_PS_T && $NEKOPS_2C ; then
+        if $NEKOPS_2L; then
             print '\e[1A\e[K\e[1A\e[K'
         else
             print '\e[1A\e[K'
