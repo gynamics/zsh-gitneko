@@ -216,21 +216,21 @@ function set-prompt:gitneko() {
         # show HEAD branch/commit on the left
         lgitinfo+="${NEKOLOR_W}(${NEKOLOR_C}${NEKOPS_HEAD}${NEKOLOR_W}@"
         local splen
-        local max_len
+        local maxlen
         if $NEKOPS_2L; then
-            splen=$((4 + ${#NEKOPS_HEAD} + rlen))
-            max_len=$((COLUMNS - splen))
+            ((splen = 4 + ${#NEKOPS_HEAD} + rlen))
+            ((maxlen = COLUMNS - splen))
         else
-            splen=$((4 + ${#NEKOPS_HEAD}))
-            max_len=$(((COLUMNS - splen) * 6 / 10))
+            ((splen = 4 + ${#NEKOPS_HEAD}))
+            ((maxlen = (COLUMNS - splen) * 6 / 10))
         fi
         # show PWD if current terminal is wide enough
-        if [[ ${#PWD/#~/\~\/} < $max_len ]]; then
+        if [[ ${#PWD/#~/\~} -lt $maxlen ]]; then
             lgitinfo+="${NEKOLOR_B}${NEKOPS_PATH}${NEKOLOR_M}${PWD#$NEKOPS_PATH} "
-        elif [[ ${#PWD/#$NEKOPS_PATH} < $max_len ]]; then
+        elif [[ ${#PWD#$NEKOPS_PATH} -lt $maxlen ]]; then
             lgitinfo+="${NEKOLOR_M}${PWD#$NEKOPS_PATH} "
-        elif [[ $max_len > 10 ]]; then
-            lgitinfo+="${NEKOLOR_B}...${NEKOLOR_M}${PWD: -${max_len}} "
+        elif [[ $maxlen -gt 10 ]]; then
+            lgitinfo+="${NEKOLOR_B}...${NEKOLOR_M}${PWD: -${maxlen}} "
         else
             lgitinfo="${lgitinfo%@} "
         fi
