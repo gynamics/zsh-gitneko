@@ -60,7 +60,7 @@ function gitneko-get-status() {
     NEKOPS_ARG2=""
     NEKOPS_ARG3=""
     # get status and set nekops args
-    local git_status=$(git --no-optional-locks status --porcelain=v1 .)
+    local git_status=$(git --no-optional-locks status --porcelain=v1 -unormal --ignore-submodules .)
     # set the first argument
     if [[ $git_status =~ [MTADRC][\ ][\ ] ]]; then
         # X (index) Modified
@@ -331,35 +331,35 @@ function gitneko() {
         "-h")
             print "Hello, I am your git neko! (^@${NEKOICON_MOUTH}@^)"
             print ""
-            print -P "  eye | git status  | X (index) | Y (worktree) "
-            print -P "  ----+-------------+-----------+--------------"
+            print -P "   eye | git status  | X (index) | Y (worktree) "
+            print -P "  -----+-------------+-----------+--------------"
             print -P "  $(halfneko ${NEKOLOR_C}${NEKOICON_EYE_UNMERGED})" \
-                           "| Unmerged    | [ADU]     | [ADU]   "
+                            "| Unmerged    | [ADU]     | [ADU]   "
             print -P "  $(halfneko ${NEKOLOR_B}${NEKOICON_EYE_XMOD})" \
-                           "| X Modified  | [MTADRC]  | [ ]     "
+                            "| X Modified  | [MTADRC]  | [ ]     "
             print -P "  $(halfneko ${NEKOLOR_G}${NEKOICON_EYE_XYMOD})" \
-                           "| XY Modified | [MTARC]   | [MTD]   "
+                            "| XY Modified | [MTARC]   | [MTD]   "
             print -P "  $(halfneko ${NEKOLOR_M}${NEKOICON_EYE_IGNORED})" \
-                           "| Ignored     | [!]       | [!]     "
+                            "| Ignored     | [!]       | [!]     "
             print -P "  $(halfneko ${NEKOLOR_R}${NEKOICON_EYE_ERROR})" \
-                           "| Error       | [X]       | [ ]     "
+                            "| Error       | [X]       | [ ]     "
             print -P "  $(halfneko ${NEKOLOR_Y}${NEKOICON_EYE_YMOD})" \
-                           "| Y Modified  | [ ]       | [MTDRC] "
+                            "| Y Modified  | [ ]       | [MTDRC] "
             print -P "  $(halfneko ${NEKOLOR_B}${NEKOICON_EYE_UNTRACKED})" \
-                           "| Untracked   | [?]       | [?]     "
+                            "| Untracked   | [?]       | [?]     "
             print -P "  $(halfneko ${NEKOLOR_W}${NEKOICON_EYE_COMMITTED})" \
-                           "| Commited    | *         | *"
+                            "| Commited    | *         | *"
             print ""
-            print -P "  toy | explanation            "
-            print -P "  ----+------------------------"
-            print -P "  ${NEKOLOR_R}${NEKOICON_REBASING}  %b%f%k" \
-                           "| In Rebase-Apply process"
-            print -P "  ${NEKOLOR_Y}${NEKOICON_STASH}  %b%f%k" \
-                           "| Stashed                "
-            print -P "  ${NEKOLOR_G}${NEKOICON_AHEAD}  %b%f%k" \
-                           "| Commits ahead          "
-            print -P "  ${NEKOLOR_B}${NEKOICON_BEHIND}  %b%f%k" \
-                           "| Commits behind        "
+            print -P "   toy | explanation             "
+            print -P "  -----+-------------------------"
+            print -P "    ${NEKOLOR_R}${NEKOICON_REBASING} %b%f%k" \
+                            "| In Rebase-Apply process"
+            print -P "    ${NEKOLOR_Y}${NEKOICON_STASH} %b%f%k" \
+                            "| Stashed                "
+            print -P "    ${NEKOLOR_G}${NEKOICON_AHEAD} %b%f%k" \
+                            "| Commits ahead          "
+            print -P "    ${NEKOLOR_B}${NEKOICON_BEHIND} %b%f%k" \
+                            "| Commits behind        "
             print ""
             print "gitneko parameters:"
             print "  -f force prompt fresh"
