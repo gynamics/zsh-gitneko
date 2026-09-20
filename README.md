@@ -19,6 +19,7 @@ a zsh script that shows a neko prompt `(^>ω<^)` indicating git status
 - [X] customize icons by setting `NEKOICON_*`
 - [X] ascii terminal compatibility
 - [X] can be referred as a prompt component
+- [X] watchdog mode
 
 # Usage
 
@@ -26,6 +27,7 @@ Simply source this script, run `gitneko -h` to show help information.
 
 - If you use a static prompt, then you can enable the prompt by setting `NEKOPS_PS_T` to `true` after loading gitneko. Then gitneko will take over your prompt whenever you change into a git directory, and recover it back when you leave.
 - If you already have a themed prompt but still want to add the neko to you own `PROMPT`, you can simply add `$NEKOPS_NEKO` to related zsh hook function, which is responsible for updating your prompt. Gitneko is designed for a prompt that supports run-time updating, if you don't know how, you may find help from the developer of your prompt theme.
+- If you set `NEKOPS_DOG_T` to `true`, then each `git status` for refreshing prompt will be called with a timeout bound, specified by `NEKOPS_DOG_TIMEOUT`. Since there may also be other time-consuming background commands running, this bound won't strictly constrain the whole respond time, but approximately.
 
 Install it with `zsh-usepkg`:
 

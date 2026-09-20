@@ -10,6 +10,10 @@ fi
 NEKOPS_T=true
 # prompt toggle
 NEKOPS_PS_T=false
+# noraneko mode toggle
+NEKOPS_DOG_T=false
+# noraneko mode timeout (in seconds)
+NEKOPS_DOG_TIMEOUT=0.3
 # two line mode toggle
 NEKOPS_2L=false
 # cascade mode toggle
@@ -34,6 +38,7 @@ NEKOLOR_C='%B%F{cyan}'
 NEKOLOR_M='%B%F{magenta}'
 NEKOLOR_Y='%B%F{yellow}'
 NEKOLOR_W='%B%F{white}'
+NEKOLOR_D='%B%F{black}'
 # gitneko icons
 NEKOICON_MOUTH='w'
 NEKOICON_EAR='^'
@@ -48,6 +53,7 @@ NEKOICON_EYE_YMOD='*'
 NEKOICON_EYE_UNTRACKED="'"
 NEKOICON_EYE_COMMITTED='>'
 NEKOICON_EYE_CLEAN='<'
+NEKOICON_EYE_UNKNOWN='?'
 NEKOICON_STASH='='
 NEKOICON_REBASING='R'
 NEKOICON_AHEAD='+'
@@ -60,7 +66,21 @@ function gitneko-get-status() {
     NEKOPS_ARG2=""
     NEKOPS_ARG3=""
     # get status and set nekops args
-    local git_status=$(git --no-optional-locks status --porcelain=v1 -unormal --ignore-submodules .)
+    local git_cmd=(git --no-optional-locks status --porcelain=v1 -unormal --ignore-submodules .)
+    local git_status
+
+    if $NEKOPS_DOG_T; then
+        git_status=$(timeout $NEKOPS_DOG_TIMEOUT ${git_cmd[@]})
+        if [[ $? != 0 ]]; then
+            # timeout
+            NEKOPS_ARG1="${NEKOLOR_D}${NEKOICON_EYE_UNKNOWN}"
+            NEKOPS_ARG2="${NEKOLOR_D}${NEKOICON_EYE_UNKNOWN}"
+            return
+        fi
+    else
+        git_status=$(${git_cmd[@]})
+    fi
+
     # set the first argument
     if [[ $git_status =~ [MTADRC][\ ][\ ] ]]; then
         # X (index) Modified
@@ -325,6 +345,14 @@ function gitneko() {
             fi
             print "Cascade mode: ${NEKOPS_2C}"
             ;;
+        "-d")
+            if $NEKOPS_DOG_T; then
+                NEKOPS_DOG_T=false
+            else
+                NEKOPS_DOG_T=true
+            fi
+            print "Watchdog mode: ${NEKOPS_DOG_T}"
+            ;;
         "-f")
             gitneko-fresh
             ;;
@@ -349,6 +377,8 @@ function gitneko() {
                             "| Untracked   | [?]       | [?]     "
             print -P "  $(halfneko ${NEKOLOR_W}${NEKOICON_EYE_COMMITTED})" \
                             "| Commited    | *         | *"
+            print -P "  $(halfneko ${NEKOLOR_D}${NEKOICON_EYE_UNKNOWN})" \
+                            "| TIMEOUT     |           | "
             print ""
             print -P "   toy | explanation             "
             print -P "  -----+-------------------------"
@@ -367,6 +397,7 @@ function gitneko() {
             print "  -t toggle prompt"
             print "  -2 toggle 2 line mode"
             print "  -c toggle cascade mode"
+            print "  -d toggle watchdog mode"
             print ""
             ;;
         "-t")

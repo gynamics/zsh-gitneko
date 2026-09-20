@@ -7,6 +7,7 @@ _gitneko() {
         "-t[toggle prompt]"
         "-2[toggle 2 line mode]"
         "-c[toggle cascade mode]"
+	"-d[toggle watchdog mode]"
     )
 
     _arguments "${options[@]}"
